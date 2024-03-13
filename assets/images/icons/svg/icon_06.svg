@@ -1,0 +1,14 @@
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30">
+  <g id="invisible_box" data-name="invisible box">
+    <rect id="Rectangle_771" data-name="Rectangle 771" width="30" height="30" fill="none"/>
+  </g>
+  <g id="Health_Icons" data-name="Health Icons" transform="translate(1.25 1.865)">
+    <g id="Group_2175" data-name="Group 2175">
+      <path id="Path_71" data-name="Path 71" d="M28.25,19.869H27.5L17.25,9.619a1.188,1.188,0,0,0-1.75,0l-3.687,3.687a.625.625,0,0,1-.875,0L10,12.369l1-1h0l5.375-5.375,5.375,5.375a1.25,1.25,0,0,0,.875.375H28.25a1.25,1.25,0,1,0,0-2.5H23.125L17.25,3.369a1.188,1.188,0,0,0-1.75,0L9.625,9.244H3.25a1.25,1.25,0,1,0,0,2.5H7.375a1.75,1.75,0,0,0,.438,1.938l1.375,1.375a3.125,3.125,0,0,0,4.375,0l2.813-2.813,9.75,9.75a1.25,1.25,0,0,0,.875.375h1.25a1.25,1.25,0,0,0,0-2.5Z" transform="translate(-2 -2.985)" fill="#403e56"/>
+      <path id="Path_72" data-name="Path 72" d="M30.2,27.45a1.25,1.25,0,0,0-1.75,1.75l4.375,4.375a1.238,1.238,0,1,0,1.75-1.75Z" transform="translate(-11.825 -12.065)" fill="#403e56"/>
+      <path id="Path_73" data-name="Path 73" d="M24.2,30.45a1.25,1.25,0,0,0-1.75,1.75l4.375,4.375a1.238,1.238,0,1,0,1.75-1.75Z" transform="translate(-9.575 -13.19)" fill="#403e56"/>
+      <path id="Path_74" data-name="Path 74" d="M17.2,32.45a1.25,1.25,0,0,0-1.75,1.75l4.375,4.375a1.238,1.238,0,1,0,1.75-1.75Z" transform="translate(-6.95 -13.94)" fill="#403e56"/>
+      <path id="Path_75" data-name="Path 75" d="M5.375,30.375A1.25,1.25,0,0,0,4.5,30H3.25a1.25,1.25,0,0,0,0,2.5H4L10.5,39a1.238,1.238,0,1,0,1.75-1.75Z" transform="translate(-2 -13.115)" fill="#403e56"/>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,484 @@
+import 'dart:async';
+import 'dart:convert';
+
+import 'dart:io';
+
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
+import 'package:jini_vendor/Config/Constants.dart';
+import 'package:jini_vendor/Controllers/Service.dart';
+import 'package:jini_vendor/Models/Brand.dart';
+import 'package:jini_vendor/Models/Category.dart';
+import 'package:jini_vendor/Models/SubCategory.dart';
+import 'package:jini_vendor/Views/Price/ProductPriceAdd.dart';
+
+import 'package:shared_preferences/shared_preferences.dart';
+
+class EditProduct extends StatefulWidget {
+  String category = "";
+  String subcategory = "";
+  String brand = "";
+  String itemName = "";
+  String ItemImage = "";
+  String ItemId = "";
+  EditProduct(
+      {required this.category,
+      required this.subcategory,
+      required this.brand,
+      required this.itemName,
+      required this.ItemImage,
+      required this.ItemId});
+
+  @override
+  _EditProductState createState() => _EditProductState();
+}
+
+class _EditProductState extends State<EditProduct> {
+  bool _loading = true;
+  bool image = false;
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  var my_controller_name = TextEditingController();
+  var my_controller = TextEditingController();
+  var itemname = TextEditingController();
+  List<Category> category = [];
+  List<Subcategory> subcategory = [];
+  List<Brand> brand = [];
+  String _category = "";
+  String _scategory = "";
+  String _brand = "";
+  String CatrgoryID = "";
+  String SubCatrgoryID = "";
+  String BrandID = "";
+  File image_path = File("");
+  String ItemImage = "";
+  bool img = false;
+
+  @override
+  void initState() {
+    print(widget.category);
+    print("--------f-fff-------");
+    setState(() {
+      _category = widget.category;
+      _scategory = widget.subcategory;
+      _brand = widget.brand;
+      ItemImage = widget.ItemImage;
+      itemname.text = widget.itemName;
+    });
+    super.initState();
+    get_category();
+    get_subcategory();
+    // getDropdownValues();
+    get_brand();
+    // option_list();
+  }
+
+  // static List<Country> countrylist = [];
+
+  // final _items = countrylist
+  //     .map((animal) => MultiSelectItem<Country>(animal, animal.name))
+  //     .toList();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: primaryColor,
+        title: Text("Add Grocery Item"),
+        centerTitle: true,
+      ),
+      body: _loading == true
+          ? Center(
+              child: CircularProgressIndicator(
+                color: primaryColor,
+              ),
+            )
+          : SingleChildScrollView(
+              child: Form(
+                key: _formKey,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      title("Category"),
+                      SizedBox(height: 5),
+                      Drop_down(category, "none", _category, 1),
+                      SizedBox(height: 10),
+                      title("Sub Category"),
+                      SizedBox(height: 5),
+                      Drop_down1(subcategory, "none", _scategory, 1),
+
+                      // Drop_down(
+                      //     education, "partner_education", partnerEducation, 1),
+                      SizedBox(height: 10),
+                      title("Brand"),
+                      SizedBox(height: 5),
+                      Drop_down2(brand, "partner_nation", _brand, 1),
+                      SizedBox(height: 10),
+                      title("Item Name"),
+                      Container(height: 90, child: textform(itemname, 1)),
+                      title("Item Image"),
+                      SizedBox(height: 5),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 100),
+                        child: ElevatedButton(
+                            onPressed: () {
+                              getimagefromgallery();
+                              setState(() {
+                                img = true;
+                              });
+                            },
+                            child: Container(
+                              child: Center(
+                                child: Text("Choose Images"),
+                              ),
+                            )),
+                      ),
+                      SizedBox(
+                        height: 10,
+                      ),
+                      Container(
+                        height: 100,
+                        width: 100,
+                        decoration: BoxDecoration(
+                            image: img == true
+                                ? DecorationImage(image: FileImage(image_path))
+                                : DecorationImage(
+                                    image: NetworkImage(widget.ItemImage)),
+                            color: Colors.blueGrey[100],
+                            borderRadius: BorderRadius.circular(5)),
+                      ),
+                      SizedBox(height: 10),
+                      btn()
+                    ],
+                  ),
+                ),
+              ),
+            ),
+    );
+  }
+
+  Padding btn() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: FlatButton(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          color: primaryColor,
+          onPressed: () {
+            if (_formKey.currentState!.validate()) {
+              // update_profile();
+              UpdateInventory();
+              setState(() {
+                _loading = true;
+              });
+            }
+          },
+          child: Container(
+            child: Center(
+              child: Text("Update",
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600)),
+            ),
+            height: 50,
+            width: 200,
+          )),
+    );
+  }
+
+  Padding title(value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(
+                  color: primaryColor,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  DropdownButtonFormField<String> Drop_down(
+    List options,
+    my_controller,
+    selected_val,
+    required,
+  ) {
+    return DropdownButtonFormField<String>(
+      decoration: textDecoration("Select"),
+      value: selected_val == "" || selected_val == null
+          ? null
+          : selected_val.toString(),
+      style: TextStyle(fontSize: 14),
+      items: options.map((item) {
+        return DropdownMenuItem<String>(
+          value: item.categoryId.toString(),
+          child: new Text(
+            item.categoryName,
+            style: TextStyle(
+              color: primaryColor,
+              fontSize: 15,
+            ),
+          ),
+        );
+      }).toList(),
+      onChanged: (newValue) {
+        setState(() {
+          CatrgoryID = newValue.toString();
+        });
+      },
+      validator: (value) {
+        if (required == 1) {
+          print(value);
+          if (value == "" || value == null) {
+            return 'This field is requrired';
+          }
+          return null;
+        } else {
+          return null;
+        }
+      },
+    );
+  }
+
+  DropdownButtonFormField<String> Drop_down1(
+    List options,
+    my_controller,
+    selected_val,
+    required,
+  ) {
+    return DropdownButtonFormField<String>(
+      decoration: textDecoration("Select"),
+      value: selected_val == "" || selected_val == null
+          ? null
+          : selected_val.toString(),
+      style: TextStyle(fontSize: 14),
+      items: options.map((item) {
+        return DropdownMenuItem<String>(
+          value: item.subCategoryId.toString(),
+          child: new Text(
+            item.subCategoryName,
+            style: TextStyle(
+              color: primaryColor,
+              fontSize: 15,
+            ),
+          ),
+        );
+      }).toList(),
+      onChanged: (newValue) {
+        setState(() {
+          SubCatrgoryID = newValue.toString();
+          print(SubCatrgoryID);
+        });
+      },
+      validator: (value) {
+        if (required == 1) {
+          print(value);
+          if (value == "" || value == null) {
+            return 'This field is requrired';
+          }
+          return null;
+        } else {
+          return null;
+        }
+      },
+    );
+  }
+
+  DropdownButtonFormField<String> Drop_down2(
+    List options,
+    my_controller,
+    selected_val,
+    required,
+  ) {
+    return DropdownButtonFormField<String>(
+      decoration: textDecoration("Select"),
+      value: selected_val == "" || selected_val == null
+          ? null
+          : selected_val.toString(),
+      style: TextStyle(fontSize: 14),
+      items: options.map((item) {
+        return DropdownMenuItem<String>(
+          value: item.brandId.toString(),
+          child: new Text(
+            item.brandName,
+            style: TextStyle(
+              color: primaryColor,
+              fontSize: 15,
+            ),
+          ),
+        );
+      }).toList(),
+      onChanged: (newValue) {
+        setState(() {
+          BrandID = newValue.toString();
+        });
+      },
+      validator: (value) {
+        if (required == 1) {
+          print(value);
+          if (value == "" || value == null) {
+            return 'This field is requrired';
+          }
+          return null;
+        } else {
+          return null;
+        }
+      },
+    );
+  }
+
+  // DropdownButtonFormField<String> dropdown() {
+  //   return DropdownButtonFormField<String>(
+  //     decoration: textDecoration(astro),
+  //     items: <String>['A', 'B', 'C', 'D'].map((String value) {
+  //       return DropdownMenuItem<String>(
+  //         value: value,
+  //         child: new Text(value),
+  //       );
+  //     }).toList(),
+  //     onChanged: (_) {},
+  //   );
+  // }
+
+  Padding textform(my_controller_name, required) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Container(
+        height: 50,
+        child: TextFormField(
+          controller: my_controller_name,
+          validator: (value) {
+            if (required == 1) {
+              if (value == "") {
+                return 'This field is requrired';
+              }
+              return null;
+            } else {
+              return null;
+            }
+          },
+          decoration: InputDecoration(
+            fillColor: Colors.white,
+            filled: true,
+            focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Color(0xFF843369))),
+            // labelText: value,
+            labelStyle: TextStyle(color: primaryColor),
+            border: OutlineInputBorder(
+                borderSide: BorderSide(color: Color(0xFF843369))),
+            enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Color(0xFF843369))),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // -----------------------------API-----------------------------//
+  get_category() {
+    Service.get_category().then((result) {
+      setState(() {
+        category = result;
+        _loading = false;
+      });
+      print("category");
+      print(category);
+    });
+  }
+
+  get_subcategory() {
+    Service.get_subcategory(widget.category).then((result) {
+      setState(() {
+        subcategory = result;
+        _loading = false;
+      });
+
+      print(subcategory);
+    });
+  }
+
+  get_brand() {
+    Service.GetBrand().then((result) {
+      setState(() {
+        brand = result;
+        _loading = false;
+      });
+      print("brand");
+      print(brand);
+    });
+  }
+
+  Future getimagefromgallery() async {
+    final ImagePicker _picker = ImagePicker();
+    var pickedimage = await _picker.pickImage(source: ImageSource.gallery);
+    setState(() {
+      if (pickedimage != null) {
+        image_path = File(pickedimage.path);
+      } else {
+        print('no image');
+      }
+    });
+  }
+
+  Future<void> _alerBox(message) async {
+    await showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Column(
+              children: [
+                Container(
+                  height: 150,
+                  width: 150,
+                  decoration: BoxDecoration(
+                      image: DecorationImage(
+                          image: AssetImage("assets/images/checked.png"))),
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                Text(message),
+              ],
+            ),
+            //title: Text(),
+            actions: <Widget>[
+              OutlinedButton(
+                onPressed: () {
+                  Navigator.pop(context, "ok");
+                  setState(() {
+                    Navigator.of(context).pop();
+                  });
+                },
+                child: const Text("OK"),
+              )
+            ],
+          );
+        });
+  }
+
+  void UpdateInventory() {
+    Service.EditInventory(CatrgoryID, SubCatrgoryID, BrandID, itemname.text,
+            image_path, widget.ItemId)
+        .then((result) {
+      print("-----------------vv----------v-----------");
+      print(result);
+
+      setState(() {
+        _alerBox("Updated Successfully");
+        _loading = false;
+      });
+    });
+  }
+}
